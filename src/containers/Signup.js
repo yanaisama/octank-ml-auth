@@ -8,11 +8,26 @@ import {
 import LoaderButton from "../components/LoaderButton";
 import "./Signup.css";
 import { Auth } from "aws-amplify";
+import config from "../config";
+import { s3Upload } from "../libs/awsLib";
+import { detectText } from "../libs/awsLib";
+import FacebookButton from "../components/FacebookButton";
 
+function getBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
+}
 
 export default class Signup extends Component {
   constructor(props) {
     super(props);
+
+    this.file = null;
+    this.base64 = null;
 
     this.state = {
       isLoading: false,
@@ -23,6 +38,8 @@ export default class Signup extends Component {
       newUser: null
     };
   }
+
+  
 
   validateForm() {
     return (
@@ -42,12 +59,47 @@ export default class Signup extends Component {
     });
   }
 
+  handleFileChange = event => {
+    this.file = event.target.files[0];
+    this.base64 = getBase64(this.file);
+  }
+
+  getText = async () => {
+      try {
+        const { bla} = await detectText(
+          this.base64
+        );
+
+        console.log("bla:"+ bla);
+      } catch (err) {
+        console.log("error", err);
+        alert("An error has occured");
+      }
+  };
+
   handleSubmit = async event => {
     event.preventDefault();
+
+    if (this.file && this.file.size > config.MAX_ATTACHMENT_SIZE) {
+      alert('Please pick a file smaller than ${config.MAX_ATTACHMENT_SIZE/1000000} MB.');
+      return;
+    }
   
     this.setState({ isLoading: true });
   
     try {
+
+      const attachment = this.file
+      ? await s3Upload(this.file)
+      : null;
+
+      console.log("key: " + attachment);
+      // identifying information on the document image
+      this.base64 = await getBase64(this.file);
+      this.getText();
+      //await detectText(b64).then(response => console.log("resultado rekognition: " + response));
+      //.then(result => console.log("resultado rekognition: " + result));
+
       const newUser = await Auth.signUp({
         username: this.state.email,
         password: this.state.password
@@ -106,9 +158,19 @@ export default class Signup extends Component {
     );
   }
 
+  handleFbLogin = () => {
+    this.props.userHasAuthenticated(true);
+  };
+  
+
   renderForm() {
     return (
       <form onSubmit={this.handleSubmit}>
+        <FacebookButton
+            onLogin={this.handleFbLogin}
+          />
+          <hr />
+
         <FormGroup controlId="email" bsSize="large">
           <ControlLabel>Email</ControlLabel>
           <FormControl
@@ -118,6 +180,10 @@ export default class Signup extends Component {
             onChange={this.handleChange}
           />
         </FormGroup>
+        <FormGroup controlId="file">
+            <ControlLabel>Documento CNH</ControlLabel>
+            <FormControl onChange={this.handleFileChange} type="file" />
+          </FormGroup>
         <FormGroup controlId="password" bsSize="large">
           <ControlLabel>Password</ControlLabel>
           <FormControl

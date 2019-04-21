@@ -1,0 +1,34 @@
+{
+    "paths": [
+        {
+            "name": "/rekognition",
+            "lambdaFunction": "detecttext",
+            "privacy": {
+                "open": true
+            }
+        }
+    ],
+    "resourceName": "rekognition",
+    "apiName": "rekognition",
+    "functionArns": [
+        {
+            "lambdaFunction": "detecttext"
+        }
+    ],
+    "privacy": {
+        "auth": 0,
+        "unauth": 0,
+        "authRoleName": "octank-ml-auth-20190418161641-authRole",
+        "unAuthRoleName": "octank-ml-auth-20190418161641-unauthRole"
+    },
+    "dependsOn": [
+        {
+            "category": "function",
+            "resourceName": "detecttext",
+            "attributes": [
+                "Name",
+                "Arn"
+            ]
+        }
+    ]
+}

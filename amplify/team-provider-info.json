@@ -1,0 +1,14 @@
+{
+    "dev": {
+        "awscloudformation": {
+            "AuthRoleName": "octank-ml-auth-20190418161641-authRole",
+            "UnauthRoleArn": "arn:aws:iam::987367854699:role/octank-ml-auth-20190418161641-unauthRole",
+            "AuthRoleArn": "arn:aws:iam::987367854699:role/octank-ml-auth-20190418161641-authRole",
+            "Region": "us-east-1",
+            "DeploymentBucketName": "octank-ml-auth-20190418161641-deployment",
+            "UnauthRoleName": "octank-ml-auth-20190418161641-unauthRole",
+            "StackName": "octank-ml-auth-20190418161641",
+            "StackId": "arn:aws:cloudformation:us-east-1:987367854699:stack/octank-ml-auth-20190418161641/821a59e0-620e-11e9-a8a0-12d954a12b14"
+        }
+    }
+}
