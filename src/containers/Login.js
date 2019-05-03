@@ -109,10 +109,10 @@ export default class Login extends Component {
     const resp2 = await sendAuthAnswer(this.state.email, 'public/' + attachment, this.state.session)
     console.log("Response API: " + JSON.stringify(resp2));
     
-    const resposta = await Auth.sendCustomChallengeAnswer(this.state.user,'public/' + attachment);
-    console.log(resposta);
-    if(this.isAuthenticated()){
-      this.props.history.push("/");
+    // const resposta = await Auth.sendCustomChallengeAnswer(this.state.user,'public/' + attachment);
+    // console.log(resposta);
+    if(resp2.statusCode == "200"){
+      this.props.history.push("/welcome");
       this.props.userHasAuthenticated(true);
     }else{
       alert("Erro de autenticação. Favor tentar novamente!");

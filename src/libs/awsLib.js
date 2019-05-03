@@ -44,6 +44,6 @@ export async function detectText(bytes) {
     return await API.post(apiName, path, init);
 }
 
-export async function parserCNH(cnh){
-    return cnh.substring((cnh.indexOf("NOME")+4),cnh.indexOf("DOc"))
+export function parserCNH(cnh){
+    return cnh.substring((cnh.indexOf("NOME")+4),cnh.indexOf("DO"))
 }

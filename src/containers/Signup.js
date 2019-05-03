@@ -23,7 +23,7 @@ function getBase64(file) {
   });
 }
 
-async function DetectText(imageData, callback) {
+async function DetectText(imageData, email, password, callback) {
   AnonLog();
 
   var rekognition = new AWS.Rekognition();
@@ -41,26 +41,18 @@ async function DetectText(imageData, callback) {
         texto += ' ' + data.TextDetections[i].DetectedText;
       }
       console.log("saida: " + texto);
-      callback(texto);
+      callback(texto, email, password);
     }
   });
 }
 
 //Provides anonymous log on to AWS services
-function AnonLog() {
-    
+function AnonLog() {  
   // Configure the credentials provider to use your identity pool
-  AWS.config.region = 'us-east-1'; // Region
+  AWS.config.region = config.cognito.REGION; // Region
   AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-    IdentityPoolId: 'us-east-1:50d404fb-d0a5-4cad-91b5-7b08e8c54b89',
+    IdentityPoolId: config.cognito.IDENTITY_POOL_ID,
   });
-  // Make the call to obtain credentials
-  // AWS.config.credentials.get(function () {
-  //   // Credentials will be available when this function is called.
-  //   var accessKeyId = AWS.config.credentials.accessKeyId;
-  //   var secretAccessKey = AWS.config.credentials.secretAccessKey;
-  //   var sessionToken = AWS.config.credentials.sessionToken;
-  // });
 }
 
 export default class Signup extends Component {
@@ -125,7 +117,7 @@ export default class Signup extends Component {
       // identifying information on the document image
       this.base64 = await getBase64(this.file);
       var image = null;
-      image = atob(this.base64.split("data:image/png;base64,")[1]);
+      image = atob(this.base64.split(";base64,")[1]);
       var length = image.length;
       var imageBytes = new ArrayBuffer(length);
       var ua = new Uint8Array(imageBytes);
@@ -135,22 +127,23 @@ export default class Signup extends Component {
 
       var nome = "";
 
-      DetectText(imageBytes, function(texto){
+      const novoUser = await DetectText(imageBytes, this.state.email, this.state.password, function(texto, email, password){
         nome =  parserCNH(texto);
+        console.log("Name::: " + nome);
+        console.log("Email::: " + email);
+        console.log("Pass::: " + password);
+        return Auth.signUp({
+          username: email,
+          password: password,
+          attributes: 
+          {
+            name: nome,
+            'custom:s3-image-object': "Real Madrid"
+          }
+        });
       });
-
-          const novoUser = Auth.signUp({
-            username: this.state.email,
-            password: this.state.password,
-            attributes: 
-            {
-              name: "LUIZ PAULO ROCHA YANAI",
-              'custom:s3-image-object': "Real Madrid"
-            }
-          });
-          this.setState({newUser: novoUser});
-     // });
-          
+      this.setState({newUser: novoUser});
+      
     } catch (e) {
       alert(e.message);
     }

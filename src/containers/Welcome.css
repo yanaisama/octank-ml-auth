@@ -1,0 +1,13 @@
+.Welcome .lander {
+    padding: 50px 0;
+    text-align: center;
+  }
+  
+  .Welcome .lander h1 {
+    font-family: "Open Sans", sans-serif;
+    font-weight: 600;
+  }
+  
+  .Welcome .lander p {
+    color: #999;
+  }
