@@ -1,15 +1,28 @@
 import { Storage } from "aws-amplify";
 import { API } from "aws-amplify";
 
-export async function s3Upload(file) {
+export async function s3Upload(file,email) {
+  console.log("upload do arquivo para usuario: " + email);
   const filename = `${Date.now()}-${file.name}`;
 
   const stored = await Storage.vault.put(filename, file, {
+    contentType: file.type,
+    metadata: { 'email' : email }
+  });
+
+  return stored.key;
+}
+
+export async function s3UploadPub(file) {
+  const filename = `${Date.now()}-${file.name}`;
+
+  const stored = await Storage.put(filename, file, {
     contentType: file.type
   });
 
   return stored.key;
 }
+
 
 export async function detectText(bytes) {
 
@@ -29,4 +42,8 @@ export async function detectText(bytes) {
       headers: headers
     };
     return await API.post(apiName, path, init);
+}
+
+export async function parserCNH(cnh){
+    return cnh.substring((cnh.indexOf("NOME")+4),cnh.indexOf("DOc"))
 }

@@ -4,8 +4,7 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 import { BrowserRouter as Router } from "react-router-dom";
-import { Auth } from "aws-amplify";
-import Amplify , { API } from "aws-amplify";
+import Amplify from "aws-amplify";
 import config from "./config";
 
 Amplify.configure({
@@ -24,10 +23,9 @@ Amplify.configure({
   API: {
     endpoints: [
       {
-        name: "rekognition",
-        endpoint: 'https://rekognition.us-east-1.amazonaws.com',
-        service: "rekognition",
-        region: 'us-east-1'
+        name: "SecurityAIAPI",
+        endpoint: config.apiGateway.URL,
+        region: config.apiGateway.REGION
       },
     ]
   }

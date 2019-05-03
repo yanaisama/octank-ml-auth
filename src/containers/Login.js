@@ -1,19 +1,36 @@
 import React, { Component } from "react";
+import Webcam from "react-webcam";
 import { FormGroup, FormControl, ControlLabel } from "react-bootstrap";
 import LoaderButton from "../components/LoaderButton";
-import { s3Upload } from "../libs/awsLib";
+import { Auth, API } from "aws-amplify";
+import { s3UploadPub } from "../libs/awsLib";
 import "./Login.css";
-import { Auth } from "aws-amplify";
-import config from "../config";
-import { detectText } from "../libs/awsLib";
-import FacebookButton from "../components/FacebookButton";
 
-function getBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
+function dataURLtoFile(dataurl, filename) {
+  var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+      bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+  while(n--){
+      u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new File([u8arr], filename, {type:mime});
+}
+
+function login(email) {
+  return API.put("SecurityAIAPI", "/signin", {
+    body: {
+      username: email,
+      password: null
+    }
+  });
+}
+
+function sendAuthAnswer(email, answer, session) {
+  return API.put("SecurityAIAPI", "/sendcustomchallengeanswer", {
+    body: {
+      'username': email,
+      'answer': answer,
+      'session': session
+    }
   });
 }
 
@@ -21,20 +38,24 @@ export default class Login extends Component {
   constructor(props) {
     super(props);
 
-    this.file = null;
-    this.base64 = null;
-
     this.state = {
         isLoading: false,
         email: "",
-        password: ""
+        password: "",
+        user: null,
+        screenshot: null,
+        imageData : null,
+        image_name: "",
+        saveImage: false,
+        validated: false,
+        attachment: "",
+        session: ""
       };
       
   }
 
   validateForm() {
     return this.state.email.length > 0 ;
-    //&& this.state.password.length > 0;
   }
 
   handleChange = event => {
@@ -43,61 +64,91 @@ export default class Login extends Component {
     });
   }
 
-  getText = async () => {
-    // Chamar a API do API Gateway para recuperar textos presentes na imagem enviada
-
-
-    // try {
-    //   const { bla} = await detectText(
-    //     this.base64
-    //   );
-
-    //   console.log("bla:"+ bla);
-    // } catch (err) {
-    //   console.log("error", err);
-    //   alert("An error has occured");
-    // }
-
-
-};
-
   handleSubmit = async event => {
     event.preventDefault();
     this.setState({ isLoading: true });
   
     try {
-      //await Auth.signIn(this.state.email, this.state.password);
-      Auth.signIn(this.state.email)
-        //.then(user => console.log(user))
-        .then(user => Auth.sendCustomChallengeAnswer(user,'5'))
-        .then(()=> this.props.switchComponent("Welcome"))
-        .catch(err => console.log(err));
 
-      this.props.userHasAuthenticated(true);
-      this.base64 = await getBase64(this.file);
-      this.getText();
-
-      this.props.history.push("/camera");
+      const respAuth = await login(this.state.email);
+      var respJS = JSON.parse(respAuth.body);
+      console.log(respJS.Session);
+      
+      this.setState({session: respJS.Session});
+      
+      const cognituser = await Auth.signIn(this.state.email);
+      this.setState({user: cognituser}); 
     } catch (e) {
       alert(e.message);
       this.setState({ isLoading: false });
     }
   }  
   
+  async isAuthenticated() {
+    try {
+      await Auth.currentAuthenticatedUser();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   handleFbLogin = () => {
     this.props.userHasAuthenticated(true);
   };
-  
 
-  render() {
+  setRef = webcam => {
+    this.webcam = webcam;
+  };
+  
+  capture = async event => {
+    const imageSrc = this.webcam.getScreenshot();
+    var file = dataURLtoFile(imageSrc, "id.png");
+    const attachment = await s3UploadPub(file);
+
+    const resp2 = await sendAuthAnswer(this.state.email, 'public/' + attachment, this.state.session)
+    console.log("Response API: " + JSON.stringify(resp2));
+    
+    const resposta = await Auth.sendCustomChallengeAnswer(this.state.user,'public/' + attachment);
+    console.log(resposta);
+    if(this.isAuthenticated()){
+      this.props.history.push("/");
+      this.props.userHasAuthenticated(true);
+    }else{
+      alert("Erro de autenticação. Favor tentar novamente!");
+      this.setState({user: null, isLoading: false});
+      this.props.history.push("/login");
+    }
+
+    this.setState({
+        attachment: attachment
+    })
+  };
+
+  renderForm() {
+    const videoConstraints = {
+      width: 1280,
+      height: 720,
+      facingMode: "user"
+    };
     return (
       <div className="Login">
         <form onSubmit={this.handleSubmit}>
-          <FacebookButton
+          {/* <FacebookButton
             onLogin={this.handleFbLogin}
-          />
+          /> */}
           <hr />
-
+          {/* <div className="TakePhoto">
+            <Webcam
+              audio={false}
+              height={350}
+              ref={this.setRef}
+              screenshotFormat="image/jpeg"
+              width={350}
+              videoConstraints={videoConstraints}
+            />
+            <button onClick={this.capture}>Capture photo</button>
+        </div> */}
           <FormGroup controlId="email" bsSize="large">
             <ControlLabel>Email</ControlLabel>
             <FormControl
@@ -119,5 +170,36 @@ export default class Login extends Component {
         </form>
       </div>
     );
+  }
+
+  renderCameraForm() {
+    const videoConstraints = {
+      width: 1280,
+      height: 720,
+      facingMode: "user"
+    };
+    return (
+        <div className="TakePhoto">
+            <Webcam
+              audio={false}
+              height={350}
+              ref={this.setRef}
+              screenshotFormat="image/jpeg"
+              width={350}
+              videoConstraints={videoConstraints}
+            />
+            <button onClick={this.capture}>Capture photo</button>
+        </div>
+    );
+  }
+
+  render(){
+     
+    //  return (<div className="Signup">{this.renderForm()}</div>)
+     return (<div className="Signup">
+        {this.state.user === null
+          ? this.renderForm()
+          : this.renderCameraForm()}
+      </div>)
   }
 }

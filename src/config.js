@@ -10,15 +10,9 @@ export default {
       APP_CLIENT_ID: "2fu2a5k5ehumcg3k7qu6dlp6f0",
       IDENTITY_POOL_ID: "us-east-1:50d404fb-d0a5-4cad-91b5-7b08e8c54b89"
     },
-    API: {
-      endpoints: [
-        {
-          name: "rekognition",
-          endpoint: "https://rekognition.us-east-1.amazonaws.com",
-          service: "rekognition",
-          region: "us-east-1"
-        }
-      ]
+    apiGateway: {
+      REGION: "us-east-1",
+      URL: "https://xv6f3udio0.execute-api.us-east-1.amazonaws.com/dev"
     },
     social: {
       FB: "2002492656528231"

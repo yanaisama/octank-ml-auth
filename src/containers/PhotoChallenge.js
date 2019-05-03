@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { FormGroup, FormControl, ControlLabel } from "react-bootstrap";
 import "./PhotoChallenge.css";
 import TakePhoto from "../components/TakePhoto";
 import LoaderButton from "../components/LoaderButton";

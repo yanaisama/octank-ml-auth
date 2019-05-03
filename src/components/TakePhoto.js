@@ -1,5 +1,16 @@
 import React from "react";
 import Webcam from "react-webcam";
+import { s3Upload } from "../libs/awsLib";
+import { Auth } from "aws-amplify";
+
+function dataURLtoFile(dataurl, filename) {
+  var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+      bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+  while(n--){
+      u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new File([u8arr], filename, {type:mime});
+}
  
 export default class TakePhoto extends React.Component {
 
@@ -14,9 +25,20 @@ export default class TakePhoto extends React.Component {
         this.webcam = webcam;
       };
      
-      capture = () => {
+    capture = (e) => {
         const imageSrc = this.webcam.getScreenshot();
+        var file = dataURLtoFile(imageSrc, "teste.png");
+        const attachment = file ? s3Upload(file) : null;
+        console.log("file key: " + attachment);
+        const credentials = Auth.currentCredentials();
+        console.log("userId: " + credentials.identityId);
+        const resposta = Auth.sendCustomChallengeAnswer(this.state.user,'private/' + credentials.identityId + '/' + attachment);
+        console.log("Resultado login: " + resposta);
         
+        if(resposta){
+          this.props.history.push("/");
+        }
+    
         this.setState({
             imageData: imageSrc
         })

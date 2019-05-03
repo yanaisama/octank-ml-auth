@@ -79,7 +79,7 @@ class App extends Component {
         <Navbar fluid collapseOnSelect>
           <Navbar.Header>
             <Navbar.Brand>
-              <Link to="/">Machine Learning enabled authenticator</Link>
+              <Link to="/">Intelligent Security API</Link>
             </Navbar.Brand>
             <Navbar.Toggle />
           </Navbar.Header>

@@ -10,8 +10,9 @@ import "./Signup.css";
 import { Auth } from "aws-amplify";
 import config from "../config";
 import { s3Upload } from "../libs/awsLib";
-import { detectText } from "../libs/awsLib";
+import { parserCNH} from "../libs/awsLib";
 import FacebookButton from "../components/FacebookButton";
+import AWS from "aws-sdk";
 
 function getBase64(file) {
   return new Promise((resolve, reject) => {
@@ -20,6 +21,46 @@ function getBase64(file) {
     reader.onload = () => resolve(reader.result);
     reader.onerror = error => reject(error);
   });
+}
+
+async function DetectText(imageData, callback) {
+  AnonLog();
+
+  var rekognition = new AWS.Rekognition();
+  var params = {
+    Image: {
+      Bytes: imageData
+    }
+  };
+  rekognition.detectText(params, function (err, data) {
+    if (err) console.log(err, err.stack); // an error occurred
+    else {
+     var texto = "";
+      // show each face and build out estimated age table
+      for (var i = 0; i < data.TextDetections.length; i++) {
+        texto += ' ' + data.TextDetections[i].DetectedText;
+      }
+      console.log("saida: " + texto);
+      callback(texto);
+    }
+  });
+}
+
+//Provides anonymous log on to AWS services
+function AnonLog() {
+    
+  // Configure the credentials provider to use your identity pool
+  AWS.config.region = 'us-east-1'; // Region
+  AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+    IdentityPoolId: 'us-east-1:50d404fb-d0a5-4cad-91b5-7b08e8c54b89',
+  });
+  // Make the call to obtain credentials
+  // AWS.config.credentials.get(function () {
+  //   // Credentials will be available when this function is called.
+  //   var accessKeyId = AWS.config.credentials.accessKeyId;
+  //   var secretAccessKey = AWS.config.credentials.secretAccessKey;
+  //   var sessionToken = AWS.config.credentials.sessionToken;
+  // });
 }
 
 export default class Signup extends Component {
@@ -35,11 +76,10 @@ export default class Signup extends Component {
       password: "",
       confirmPassword: "",
       confirmationCode: "",
-      newUser: null
+      newUser: null,
+      nome: ""
     };
   }
-
-  
 
   validateForm() {
     return (
@@ -64,24 +104,12 @@ export default class Signup extends Component {
     this.base64 = getBase64(this.file);
   }
 
-  getText = async () => {
-      try {
-        const { bla} = await detectText(
-          this.base64
-        );
-
-        console.log("bla:"+ bla);
-      } catch (err) {
-        console.log("error", err);
-        alert("An error has occured");
-      }
-  };
 
   handleSubmit = async event => {
     event.preventDefault();
 
     if (this.file && this.file.size > config.MAX_ATTACHMENT_SIZE) {
-      alert('Please pick a file smaller than ${config.MAX_ATTACHMENT_SIZE/1000000} MB.');
+      alert('Please pick a file smaller than 5 TB.');
       return;
     }
   
@@ -90,23 +118,39 @@ export default class Signup extends Component {
     try {
 
       const attachment = this.file
-      ? await s3Upload(this.file)
+      ? await s3Upload(this.file, this.state.email)
       : null;
 
       console.log("key: " + attachment);
       // identifying information on the document image
       this.base64 = await getBase64(this.file);
-      this.getText();
-      //await detectText(b64).then(response => console.log("resultado rekognition: " + response));
-      //.then(result => console.log("resultado rekognition: " + result));
+      var image = null;
+      image = atob(this.base64.split("data:image/png;base64,")[1]);
+      var length = image.length;
+      var imageBytes = new ArrayBuffer(length);
+      var ua = new Uint8Array(imageBytes);
+      for (var i = 0; i < length; i++) {
+        ua[i] = image.charCodeAt(i);
+      }
 
-      const newUser = await Auth.signUp({
-        username: this.state.email,
-        password: this.state.password
+      var nome = "";
+
+      DetectText(imageBytes, function(texto){
+        nome =  parserCNH(texto);
       });
-      this.setState({
-        newUser
-      });
+
+          const novoUser = Auth.signUp({
+            username: this.state.email,
+            password: this.state.password,
+            attributes: 
+            {
+              name: "LUIZ PAULO ROCHA YANAI",
+              'custom:s3-image-object': "Real Madrid"
+            }
+          });
+          this.setState({newUser: novoUser});
+     // });
+          
     } catch (e) {
       alert(e.message);
     }
@@ -166,10 +210,10 @@ export default class Signup extends Component {
   renderForm() {
     return (
       <form onSubmit={this.handleSubmit}>
-        <FacebookButton
+        {/* <FacebookButton
             onLogin={this.handleFbLogin}
           />
-          <hr />
+          <hr /> */}
 
         <FormGroup controlId="email" bsSize="large">
           <ControlLabel>Email</ControlLabel>
@@ -222,4 +266,7 @@ export default class Signup extends Component {
       </div>
     );
   }
+
+  
+
 }
