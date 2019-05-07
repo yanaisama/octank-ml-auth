@@ -23,7 +23,7 @@ Amplify.configure({
   API: {
     endpoints: [
       {
-        name: "SecurityAIAPI",
+        name: config.apiGateway.API_NAME,
         endpoint: config.apiGateway.URL,
         region: config.apiGateway.REGION
       },

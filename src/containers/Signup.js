@@ -14,6 +14,7 @@ import { parserCNH} from "../libs/awsLib";
 import FacebookButton from "../components/FacebookButton";
 import AWS from "aws-sdk";
 
+// Function that returns the file content as base64
 function getBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -23,6 +24,8 @@ function getBase64(file) {
   });
 }
 
+// Function that calls the Rekognition's DetectText API for extract info
+// from user Identification
 async function DetectText(imageData, email, password, callback) {
   AnonLog();
 
@@ -109,11 +112,11 @@ export default class Signup extends Component {
   
     try {
 
+      // Upload attachment provided by the user to S3 in a secure bucket
       const attachment = this.file
       ? await s3Upload(this.file, this.state.email)
       : null;
 
-      console.log("key: " + attachment);
       // identifying information on the document image
       this.base64 = await getBase64(this.file);
       var image = null;
@@ -132,13 +135,15 @@ export default class Signup extends Component {
         console.log("Name::: " + nome);
         console.log("Email::: " + email);
         console.log("Pass::: " + password);
+
+        // User sign up at Cognito User Pool using infos extract from his Identification
         return Auth.signUp({
           username: email,
           password: password,
           attributes: 
           {
             name: nome,
-            'custom:s3-image-object': "Real Madrid"
+            'custom:s3-image-object': attachment
           }
         });
       });
@@ -157,10 +162,12 @@ export default class Signup extends Component {
     this.setState({ isLoading: true });
   
     try {
+      // User sign up confirmation
       await Auth.confirmSignUp(this.state.email, this.state.confirmationCode);
-      await Auth.signIn(this.state.email, this.state.password);
+      //await Auth.signIn(this.state.email, this.state.password);
   
-      this.props.userHasAuthenticated(true);
+      //this.props.userHasAuthenticated(true);
+
       this.props.history.push("/");
     } catch (e) {
       alert(e.message);
@@ -259,7 +266,4 @@ export default class Signup extends Component {
       </div>
     );
   }
-
-  
-
 }

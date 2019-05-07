@@ -12,7 +12,8 @@ export default {
     },
     apiGateway: {
       REGION: "us-east-1",
-      URL: "https://xv6f3udio0.execute-api.us-east-1.amazonaws.com/dev"
+      URL: "https://xv6f3udio0.execute-api.us-east-1.amazonaws.com/dev",
+      API_NAME: "SecurityAIAPI"
     },
     social: {
       FB: "2002492656528231"
