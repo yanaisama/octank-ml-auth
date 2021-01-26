@@ -10,5 +10,23 @@
             "StackName": "octank-ml-auth-20190418161641",
             "StackId": "arn:aws:cloudformation:us-east-1:987367854699:stack/octank-ml-auth-20190418161641/821a59e0-620e-11e9-a8a0-12d954a12b14"
         }
+    },
+    "octank": {
+        "awscloudformation": {
+            "AuthRoleName": "amplify-octank-ml-auth-octank-160645-authRole",
+            "UnauthRoleArn": "arn:aws:iam::987367854699:role/amplify-octank-ml-auth-octank-160645-unauthRole",
+            "AuthRoleArn": "arn:aws:iam::987367854699:role/amplify-octank-ml-auth-octank-160645-authRole",
+            "Region": "us-east-1",
+            "DeploymentBucketName": "amplify-octank-ml-auth-octank-160645-deployment",
+            "UnauthRoleName": "amplify-octank-ml-auth-octank-160645-unauthRole",
+            "StackName": "amplify-octank-ml-auth-octank-160645",
+            "StackId": "arn:aws:cloudformation:us-east-1:987367854699:stack/amplify-octank-ml-auth-octank-160645/a5841100-6009-11eb-849b-126979f2f819",
+            "AmplifyAppId": "dpvu8viskci89"
+        },
+        "categories": {
+            "function": {
+                "detecttext": {}
+            }
+        }
     }
 }

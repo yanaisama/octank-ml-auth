@@ -1,5 +1,5 @@
-import React, { Component } from "react";
 import "./Welcome.css";
+import React, { Component } from "react";
 import LoaderButton from "../components/LoaderButton";
 import { API } from "aws-amplify";
 import config from "../config";
@@ -47,7 +47,7 @@ export default class Welcome extends Component {
         <div className="lander">
           <h1>Welcome {this.props.location.state.nome}</h1>
           <br></br>
-          <img src="thanos.jpg" height="300" />
+          <img src="thanos.jpg" height="300" alt="thanos"/>
           <form onSubmit={this.handleConfirmationSubmit}>
               <LoaderButton
                 block
@@ -69,7 +69,7 @@ export default class Welcome extends Component {
         <div className="lander">
           <h1>HAHHAHAHAHAHAHAHAAH !!!!</h1>
           <br></br>
-          <img src="everyone.jpg" height="300" />
+          <img src="everyone.jpg" height="300" alt="everyone" />
         </div>
       </div>
     );

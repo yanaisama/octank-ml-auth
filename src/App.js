@@ -1,11 +1,10 @@
-import { LinkContainer } from "react-router-bootstrap";
+import "./App.css";
 import React, { Component, Fragment } from "react";
 import { Link, withRouter } from "react-router-dom";
+import { LinkContainer } from "react-router-bootstrap";
 import { Nav, Navbar, NavItem } from "react-bootstrap";
-import "./App.css";
 import Routes from "./Routes";
 import { Auth } from "aws-amplify";
-import config from "./config";
 
 class App extends Component {
   constructor(props) {
@@ -19,8 +18,6 @@ class App extends Component {
   }
 
   async componentDidMount() {
-    this.loadFacebookSDK();
-
     try {
       await Auth.currentAuthenticatedUser();
       this.userHasAuthenticated(true);
@@ -33,26 +30,6 @@ class App extends Component {
   
     this.setState({ isAuthenticating: false });
   }
-
-  loadFacebookSDK() {
-    window.fbAsyncInit = function() {
-      window.FB.init({
-        appId            : config.social.FB,
-        autoLogAppEvents : true,
-        xfbml            : true,
-        version          : 'v3.1'
-      });
-    };
-  
-    (function(d, s, id){
-       var js, fjs = d.getElementsByTagName(s)[0];
-       if (d.getElementById(id)) {return;}
-       js = d.createElement(s); js.id = id;
-       js.src = "https://connect.facebook.net/en_US/sdk.js";
-       fjs.parentNode.insertBefore(js, fjs);
-     }(document, 'script', 'facebook-jssdk'));
-  }
-  
   
   userHasAuthenticated = authenticated => {
     this.setState({ isAuthenticated: authenticated });
@@ -60,12 +37,9 @@ class App extends Component {
 
   handleLogout = async event => {
     await Auth.signOut();
-  
     this.userHasAuthenticated(false);
-  
     this.props.history.push("/login");
   }  
-   
   
   render() {
     const childProps = {
@@ -102,11 +76,7 @@ class App extends Component {
         <Routes childProps={childProps} />
       </div>
     );
-  }
-  
-  
-  
+  } 
 }
 
 export default withRouter(App);
-

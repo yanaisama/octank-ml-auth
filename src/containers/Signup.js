@@ -1,3 +1,4 @@
+import "./Signup.css";
 import React, { Component } from "react";
 import {
   HelpBlock,
@@ -6,12 +7,10 @@ import {
   ControlLabel
 } from "react-bootstrap";
 import LoaderButton from "../components/LoaderButton";
-import "./Signup.css";
 import { Auth } from "aws-amplify";
 import config from "../config";
 import { s3Upload } from "../libs/awsLib";
-import { parserCNH} from "../libs/awsLib";
-import FacebookButton from "../components/FacebookButton";
+import { parserCNH } from "../libs/awsLib";
 import AWS from "aws-sdk";
 
 // Function that returns the file content as base64
@@ -164,10 +163,6 @@ export default class Signup extends Component {
     try {
       // User sign up confirmation
       await Auth.confirmSignUp(this.state.email, this.state.confirmationCode);
-      //await Auth.signIn(this.state.email, this.state.password);
-  
-      //this.props.userHasAuthenticated(true);
-
       this.props.history.push("/");
     } catch (e) {
       alert(e.message);
@@ -210,11 +205,6 @@ export default class Signup extends Component {
   renderForm() {
     return (
       <form onSubmit={this.handleSubmit}>
-        {/* <FacebookButton
-            onLogin={this.handleFbLogin}
-          />
-          <hr /> */}
-
         <FormGroup controlId="email" bsSize="large">
           <ControlLabel>Email</ControlLabel>
           <FormControl

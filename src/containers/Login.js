@@ -1,11 +1,11 @@
+import "./Login.css";
 import React, { Component } from "react";
-import Webcam from "react-webcam";
 import { FormGroup, FormControl, ControlLabel } from "react-bootstrap";
 import LoaderButton from "../components/LoaderButton";
+import Webcam from "react-webcam";
 import { Auth, API } from "aws-amplify";
 import { s3UploadPub } from "../libs/awsLib";
 import config from "../config";
-import "./Login.css";
 
 function dataURLtoFile(dataurl, filename) {
   var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
@@ -15,7 +15,6 @@ function dataURLtoFile(dataurl, filename) {
   }
   return new File([u8arr], filename, {type:mime});
 }
-
 
 // Function that calls API Gateway to user login
 function login(email) {
@@ -106,10 +105,6 @@ export default class Login extends Component {
     }
   }
 
-  handleFbLogin = () => {
-    this.props.userHasAuthenticated(true);
-  };
-
   setRef = webcam => {
     this.webcam = webcam;
   };
@@ -127,7 +122,7 @@ export default class Login extends Component {
     // Traditional way to respond login challenge using Amplify's Auth API
     // const resposta = await Auth.sendCustomChallengeAnswer(this.state.user,'public/' + attachment);
 
-    if(resp2.statusCode == "200"){
+    if(resp2.statusCode === "200"){
       const tokens = JSON.parse(resp2.body);
       console.log('JWT:'+ JSON.stringify(parseJwt(tokens.idToken)));
       const nomeUser = parseJwt(tokens.idToken).name;
@@ -143,29 +138,10 @@ export default class Login extends Component {
   };
 
   renderForm() {
-    const videoConstraints = {
-      width: 1280,
-      height: 720,
-      facingMode: "user"
-    };
     return (
       <div className="Login">
         <form onSubmit={this.handleSubmit}>
-          {/* <FacebookButton
-            onLogin={this.handleFbLogin}
-          /> */}
           <hr />
-          {/* <div className="TakePhoto">
-            <Webcam
-              audio={false}
-              height={350}
-              ref={this.setRef}
-              screenshotFormat="image/jpeg"
-              width={350}
-              videoConstraints={videoConstraints}
-            />
-            <button onClick={this.capture}>Capture photo</button>
-        </div> */}
           <FormGroup controlId="email" bsSize="large">
             <ControlLabel>Email</ControlLabel>
             <FormControl

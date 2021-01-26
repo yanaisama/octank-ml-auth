@@ -9,6 +9,7 @@ export async function s3Upload(file,email) {
     contentType: file.type,
     metadata: { 'email' : email }
   });
+  console.log("arquivo incluindo com a chave: " + stored.key);
 
   return stored.key;
 }
