@@ -85,14 +85,15 @@ export default class Login extends Component {
 
       // User login through API Gateway
       const respAuth = await login(this.state.email);
-      var respJS = JSON.parse(respAuth.body);
-      this.setState({session: respJS.Session});
+      console.log(respAuth);
+      //var respJS = JSON.parse(respAuth.body);
+      this.setState({session: respAuth.Session});
       
       // Traditional way to initiate login challenge using Amplify's Auth API
       //const cognituser = await Auth.signIn(this.state.email);
-      this.setState({user: respJS.Username}); 
+      this.setState({user: respAuth.Username}); 
     } catch (e) {
-      alert(e.message);
+      alert('api -> login: '+ e.message);
       this.setState({ isLoading: false });
     }
   }  
@@ -117,25 +118,27 @@ export default class Login extends Component {
     var file = dataURLtoFile(imageSrc, "id.png");
     const attachment = await s3UploadPub(file);
 
-    // Response to login challenge through API Gateway
-    const resp2 = await sendAuthAnswer(this.state.email, 'public/' + attachment, this.state.session)
-    
     // Traditional way to respond login challenge using Amplify's Auth API
     // const resposta = await Auth.sendCustomChallengeAnswer(this.state.user,'public/' + attachment);
 
-    if(resp2.statusCode === "200"){
-      const tokens = JSON.parse(resp2.body);
-      console.log('JWT:'+ JSON.stringify(parseJwt(tokens.idToken)));
-      const nomeUser = parseJwt(tokens.idToken).name;
-      this.props.history.push(
-        {pathname: '/welcome', 
-         state: {token: tokens.accessToken, nome: nomeUser}});
-      this.props.userHasAuthenticated(true);
-    }else{
-      alert("Erro de autenticação. Favor tentar novamente!");
-      this.setState({user: null, isLoading: false});
-      this.props.history.push("/login");
-    }
+    // Response to login challenge through API Gateway
+    sendAuthAnswer(this.state.email, 'public/' + attachment, this.state.session)
+        .then(resp2 => {
+            console.log(resp2);
+            if('accessToken' in resp2){
+              //const tokens = JSON.parse(resp2.body);
+              console.log('JWT:'+ JSON.stringify(parseJwt(resp2.idToken)));
+              const nomeUser = parseJwt(resp2.idToken).name;
+              this.props.history.push({pathname: '/welcome', state: {token: resp2.accessToken, nome: nomeUser}});
+              this.props.userHasAuthenticated(true);
+            }else{
+              alert("Erro de autenticação. Favor tentar novamente!");
+              this.setState({user: null, isLoading: false});
+              this.props.history.push("/login");
+            }
+            })
+        .catch(err => console.log(err));
+    
   };
 
   renderForm() {
