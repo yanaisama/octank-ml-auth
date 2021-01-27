@@ -88,6 +88,7 @@ export default class Login extends Component {
       var respJS = JSON.parse(respAuth.body);
       this.setState({session: respJS.Session});
       
+      // Traditional way to initiate login challenge using Amplify's Auth API
       //const cognituser = await Auth.signIn(this.state.email);
       this.setState({user: respJS.Username}); 
     } catch (e) {
