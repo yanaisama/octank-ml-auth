@@ -4,4 +4,6 @@ Octank - Sample Custom Authentication mechanism using Cognito and Facial Recogni
 
 Sample React App using Amplify
 
-![application](iamges/home.png "App Home")
+![application](images/home.png "App Home")
+
+In construction... 
